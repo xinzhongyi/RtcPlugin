@@ -1,27 +1,17 @@
 const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+const MinifyPlugin = require("babel-minify-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const path = require('path');
+const webpack = require('webpack');
 
 module.exports = merge(common, {
+    output:{
+        filename: '[name].[chunkhash].js',
+    },
     optimization: {
-        splitChunks: {
-            cacheGroups: {
-                styles: {
-                    name: 'styles',
-                    test: /\.scss|css$/,
-                    chunks: 'all',    // merge all the css chunk to one file
-                    enforce: true
-                }
-            }
-        },
         minimizer: [
-            new UglifyJsPlugin({
-                cache: true,
-                parallel: true,
-                sourceMap: true
-            }),
             new OptimizeCSSAssetsPlugin({})
         ]
     },
@@ -31,6 +21,10 @@ module.exports = merge(common, {
             // both options are optional
             filename: '[name].[hash].css',
             chunkFilename: '[id].[hash].css'
+        }),
+        new MinifyPlugin({}),
+        new webpack.DefinePlugin({
+            ENVIRONMENT: JSON.stringify('PROD')
         })
     ],
     module: {

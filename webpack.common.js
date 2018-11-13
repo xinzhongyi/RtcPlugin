@@ -5,7 +5,35 @@ const webpack = require('webpack');
 
 const config = {
     entry: {
-         app: './src/index.js'
+        app: './src/index.js',
+        polyfills: './src/polyfills.js',
+    },
+    optimization: {
+        splitChunks: {
+            chunks: 'initial',
+            minSize: 1,
+            minChunks: 1,
+            name: true,
+            cacheGroups: {
+                vendors: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: "vendors",
+                    chunks: "all"
+                },
+                commons: {
+                    name: "commons",
+                    chunks: "all",
+                    minChunks: 2,
+                },
+                styles: {
+                    name: 'styles',
+                    test: /\.scss|css$/,
+                    chunks: 'all',
+                    enforce: true,
+                    minChunks: 2,
+                }
+            }
+        }
     },
     plugins: [
         new CleanWebpackPlugin(['dist']),
@@ -16,7 +44,7 @@ const config = {
 
     output:{
         path: path.resolve(__dirname, 'dist'),
-        filename: 'index.bundle.js',
+        filename: '[name].[hash].js',
         publicPath: '/'
     },
 
@@ -33,6 +61,16 @@ const config = {
                 use: [
                     'file-loader'
                 ]
+            },
+            {
+                test: require.resolve('jquery'), //require.resolve 用来获取模块的绝对路径
+                use: [{
+                    loader: 'expose-loader',
+                    options: 'jQuery'
+                }, {
+                    loader: 'expose-loader',
+                    options: '$'
+                }]
             }
         ]
     }
